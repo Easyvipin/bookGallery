@@ -6,6 +6,7 @@ const app = express(); //creating an instance of express server
 const expressLayouts = require("express-ejs-layouts");
 const indexRouter = require("./routes/index"); // index router
 const authorRouter = require("./routes/author"); // author router
+const bookRouter = require("./routes/books"); // book router
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 
@@ -16,6 +17,7 @@ app.use(bodyParser.urlencoded({ limit: "10mb", extended: false }));
 app.use(express.static("public"));
 app.use("/", indexRouter);
 app.use("/authors", authorRouter);
+app.use("/books", bookRouter);
 
 /* mongoose connection */
 mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
