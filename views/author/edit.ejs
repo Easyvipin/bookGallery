@@ -1,0 +1,7 @@
+<h1>Edit</h1>
+<form action="/authors/<%=author.id%>?_method=PUT" method="POST">
+  <%- include("../partials/errorMessage") %> <%- include("_formField") %>
+
+  <a href="/authors/<%=author.id%>">Cancel</a>
+  <button type="submit">Update</button>
+</form>
