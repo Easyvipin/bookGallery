@@ -10,7 +10,7 @@
 <div class="actions">
   <a href="/books/<%=book.id%>/edit">Edit</a>
   <a href="/authors/<%=book.author.id%>">View author</a>
-  <%-include("../partials/deleteform",{url:`/books/${book.id}`}) %>
+  <%-include("../partials/deleteForm",{url:`/books/${book.id}`}) %>
 </div>
 <div>
   <h3>Author name :<%=book.author.name%></h3>
