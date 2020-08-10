@@ -37,6 +37,32 @@ router.get("/new", async (req, res) => {
     res.redirect("/books");
   }
 });
+/* view a book  */
+
+router.get("/:bookId", async (req, res) => {
+  try {
+    const eachBook = await Book.findById(req.params.bookId)
+      .populate("author")
+      .exec();
+
+    res.render("book/show", { book: eachBook });
+  } catch {
+    res.redirect("/");
+  }
+});
+
+/* edit page of book */
+router.get("/:bookId/edit", async (req, res) => {
+  console.log("hello");
+  try {
+    const book = await Book.findById(req.params.bookId);
+    createEditPage(res, book); // generate edit form page from createFormpage
+  } catch (err) {
+    console.error(err);
+    res.redirect("/books");
+  }
+});
+
 // handle the post request
 router.post("/", async (req, res) => {
   const book = new Book({
@@ -46,34 +72,93 @@ router.post("/", async (req, res) => {
     pageCount: req.body.pageCount,
     description: req.body.description,
   });
+
   saveCover(book, req.body.cover);
   try {
     const newBook = await book.save(); // saving the book document that was just created
-    console.log(newBook);
     res.redirect("books");
   } catch {
     createNewPage(res, new Book(), true);
   }
 });
+
+/* update a book */
+
+router.put("/:bookId", async (req, res) => {
+  let book;
+  try {
+    const author = await Author.find({});
+    book = await Book.findById(req.params.bookId);
+    console.log(req.body.name);
+    book.title = req.body.title;
+    book.author = req.body.author;
+    book.publishDate = new Date(req.body.publishDate);
+    book.pageCount = req.body.pageCount;
+    book.description = req.body.description;
+    if (book.cover != null && res.body.cover != "") {
+      saveCover(book, req.body.cover);
+    }
+    await book.save();
+    res.redirect(`/books/${req.params.bookId}`);
+  } catch {
+    if (book == null) {
+      res.redirect("/");
+    } else {
+      res.render("book/edit", {
+        book: book,
+        authors: author,
+        errorMessage: "Error updating Book",
+      });
+    }
+  }
+});
+
+/* delete a book */
+
+router.delete("/:bookId", async (req, res) => {
+  let book;
+  try {
+    book = await Book.findById(req.params.bookId);
+    await book.remove();
+    res.redirect(`/books`);
+  } catch {
+    if (book == null) {
+      res.redirect("/books");
+    } else {
+      res.redirect(`/`);
+    }
+  }
+});
 async function createNewPage(res, book, hasError = false) {
-  const authors = await Author.find({});
-  const params = {
-    authors: authors,
-    book: book,
-  };
-  if (hasError == true) params.errorMessage = "Error in creating the book"; // checking for error in the page
-  res.render("book/new", params);
+  createFormPage(res, book, "new", hasError);
+}
+async function createEditPage(res, book, hasError = false) {
+  createFormPage(res, book, "edit", hasError);
+}
+async function createFormPage(res, book, form, hasError) {
+  try {
+    const authors = await Author.find({});
+    const params = {
+      authors: authors,
+      book: book,
+    };
+    if (hasError == true) params.errorMessage = "Error in creating the book"; // checking for error in the page
+    res.render(`book/${form}`, params);
+  } catch {
+    res.redirect("/books");
+  }
 }
 
+/* save cover  */
+
 function saveCover(book, coverEncoded) {
-  console.log("hello");
   if (coverEncoded == null) return;
-  console.log(coverEncoded);
-  const cover = JSON.parse(coverEncoded);
-  console.log(cover);
+
+  const cover = JSON.parse(coverEncoded); // its a json file contain the information about the image
+
   if (cover != null && imageMimeType.includes(cover.type))
-    book.coverImage = new Buffer.from(cover.data, "base64");
-  book.coverImageType = cover.type;
+    book.coverImage = new Buffer.from(cover.data, "base64"); // converting the base64 encoded data into buffer
+  book.coverImageType = cover.type; // cover type
 }
 
 module.exports = router;

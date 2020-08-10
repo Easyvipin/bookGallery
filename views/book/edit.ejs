@@ -1,0 +1,6 @@
+<h1><%=book.name%></h1>
+<form action="/books/<%=book.id%>?_method=PUT" method="POST">
+  <%- include("../partials/errorMessage") %> <%- include("_formField") %>
+  <a href="/books">Cancel</a>
+  <button type="submit">Update</button>
+</form>
